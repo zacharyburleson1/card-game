@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Card RNG Game</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #111 0, #000 60%);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .game-wrapper {
+      margin-top: 40px;
+      max-width: 900px;
+      width: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .score-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .score-display {
+      font-size: 1.4rem;
+      font-weight: 700;
+      text-shadow: 0 0 10px #0ff;
+    }
+
+    .status-message {
+      font-size: 0.95rem;
+      opacity: 0.9;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #ff00cc, #3333ff);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.9rem;
+      box-shadow: 0 0 10px rgba(255, 0, 200, 0.6);
+      transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.1s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 16px rgba(255, 0, 200, 0.9);
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: default;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .cards-container {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      justify-content: center;
+    }
+
+    .card {
+      width: 120px;
+      height: 180px;
+      perspective: 1000px;
+      cursor: pointer;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.5s;
+    }
+
+    .card.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .card-back {
+      background-image: url("card-back.jpeg"); /* <- your image */
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 0 18px rgba(0, 200, 255, 0.6);
+    }
+
+    .card-front {
+      transform: rotateY(180deg);
+      background: radial-gradient(circle at top, #222 0, #000 70%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 18px rgba(0, 255, 200, 0.7);
+    }
+
+    .card-value {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #0ff;
+      text-shadow:
+        0 0 8px #0ff,
+        0 0 16px #0ff,
+        0 0 24px #0ff;
+    }
+
+    .card-value.bad {
+      color: #ff0033;
+      text-shadow:
+        0 0 8px #ff0033,
+        0 0 16px #ff0033,
+        0 0 24px #ff0033;
+    }
+
+    .mode-button.active {
+      outline: 2px solid #0ff;
+      box-shadow: 0 0 16px rgba(0, 255, 255, 0.9);
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        width: 90px;
+        height: 135px;
+      }
+      .card-value {
+        font-size: 1.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-wrapper">
+    <div class="score-bar">
+      <div class="score-display">Score: <span id="score">0</span></div>
+      <div class="status-message" id="status">Pick a mode to start.</div>
+    </div>
+
+    <div class="controls">
+      <button class="mode-button" data-picks="5">Mode: Pick 5</button>
+      <button class="mode-button" data-picks="7">Mode: Pick 7</button>
+      <button class="mode-button" data-picks="9">Mode: Pick 9</button>
+      <button id="newGameBtn" disabled>New Game</button>
+    </div>
+
+    <div class="cards-container" id="cardsContainer"></div>
+  </div>
+
+  <audio id="goodSound">
+    <source src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" type="audio/ogg">
+  </audio>
+  <audio id="badSound">
+    <source src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" type="audio/ogg">
+  </audio>
+
+  <script>
+    const cardsContainer = document.getElementById("cardsContainer");
+    const scoreEl = document.getElementById("score");
+    const statusEl = document.getElementById("status");
+    const newGameBtn = document.getElementById("newGameBtn");
+    const modeButtons = document.querySelectorAll(".mode-button");
+    const goodSound = document.getElementById("goodSound");
+    const badSound = document.getElementById("badSound");
+
+    let currentModePicks = null;
+    let remainingPicks = 0;
+    let score = 0;
+    let gameOver = false;
+    let cardData = [];
+
+    const baseValues = [
+      "1000", "1000", "1000", "1000",
+      "2500", "2500", "2500",
+      "X25", "X25",
+      "BAD", "BAD"
+    ];
+
+    function shuffle(array) {
+      const arr = array.slice();
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function createCards() {
+      cardsContainer.innerHTML = "";
+      cardData = shuffle(baseValues).map((value, index) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.dataset.index = index;
+
+        const inner = document.createElement("div");
+        inner.className = "card-inner";
+
+        const back = document.createElement("div");
+        back.className = "card-face card-back";
+
+        const front = document.createElement("div");
+        front.className = "card-face card-front";
+
+        const valueEl = document.createElement("div");
+        valueEl.className = "card-value";
+        if (value === "BAD") {
+          valueEl.textContent = "X";
+          valueEl.classList.add("bad");
+        } else {
+          valueEl.textContent = value;
+        }
+
+        front.appendChild(valueEl);
+        inner.appendChild(back);
+        inner.appendChild(front);
+        card.appendChild(inner);
+        cardsContainer.appendChild(card);
+
+        card.addEventListener("click", () => onCardClick(index, card, value));
+
+        return { value, flipped: false, element: card };
+      });
+    }
+
+    function resetGame() {
+      score = 0;
+      scoreEl.textContent = score;
+      remainingPicks = currentModePicks || 0;
+      gameOver = false;
+      statusEl.textContent = remainingPicks
+        ? `You can pick ${remainingPicks} card(s).`
+        : "Pick a mode to start.";
+      createCards();
+    }
+
+    function onCardClick(index, card, value) {
+      if (gameOver || remainingPicks <= 0) return;
+
+      const data = cardData[index];
+      if (data.flipped) return;
+
+      data.flipped = true;
+      card.classList.add("flipped");
+      remainingPicks--;
+
+      if (value === "BAD") {
+        badSound.currentTime = 0;
+        badSound.play().catch(() => {});
+        statusEl.textContent = "Game Over! You hit a bad card.";
+        gameOver = true;
+        return;
+      }
+
+      goodSound.currentTime = 0;
+      goodSound.play().catch(() => {});
+
+      if (value === "X25") {
+        score = score * 25 || 25; // if score was 0, treat as 25
+      } else {
+        score += parseInt(value, 10);
+      }
+      scoreEl.textContent = score;
+
+      if (remainingPicks === 0 && !gameOver) {
+        statusEl.textContent = "No picks left! Final score: " + score;
+        gameOver = true;
+      } else if (!gameOver) {
+        statusEl.textContent = `Nice! ${remainingPicks} pick(s) left.`;
+      }
+    }
+
+    modeButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        modeButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentModePicks = parseInt(btn.dataset.picks, 10);
+        newGameBtn.disabled = false;
+        resetGame();
+      });
+    });
+
+    newGameBtn.addEventListener("click", () => {
+      if (!currentModePicks) return;
+      resetGame();
+    });
+  </script>
+</body>
+</html>
