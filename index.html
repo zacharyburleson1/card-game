@@ -28,7 +28,7 @@
       height: 100vh;
       display: flex;
       flex-direction: column;
-      padding: 8px;
+      padding: 0;
       box-sizing: border-box;
       overflow: hidden;
     }
@@ -36,7 +36,7 @@
     .score-bar,
     .controls {
       flex-shrink: 0;
-      margin-bottom: 6px;
+      padding: 6px 10px;
     }
 
     .score-display {
@@ -54,6 +54,7 @@
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
+      margin-bottom: 4px;
     }
 
     button {
@@ -86,15 +87,16 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      align-content: center;
+      align-content: flex-start;
       gap: 8px;
       overflow: hidden;
+      padding-top: 4px;
     }
 
     /* MOBILE AUTO-SCALING CARDS */
     .card {
-      flex: 0 1 calc(25% - 8px); /* 4 per row */
-      height: calc((100vh - 220px) / 3); /* Fit 3 rows */
+      flex: 0 1 calc(25% - 8px);
+      height: calc((100vh - 220px) / 3);
       max-height: 160px;
       max-width: 110px;
       perspective: 1000px;
@@ -160,25 +162,26 @@
       box-shadow: 0 0 16px rgba(0, 255, 255, 0.9);
     }
 
-    /* DESKTOP FIX — NO SCROLLING, CARDS HIGHER UP */
+    /* DESKTOP FIX — CARDS RIGHT UNDER BUTTONS, NO SCROLL */
     @media (min-width: 900px) {
       .game-wrapper {
-        padding-top: 0;
+        padding: 0;
       }
 
-      .score-bar {
-        margin-top: 4px;
+      .score-bar,
+      .controls {
+        padding: 4px 10px;
       }
 
       .cards-container {
-        align-content: flex-start; /* Move cards upward */
-        padding-top: 10px;
+        padding-top: 0;
+        align-content: flex-start;
       }
 
       .card {
-        flex: 0 1 calc(20% - 10px); /* 5 per row */
-        height: 135px; /* Slightly smaller so everything fits */
-        max-height: 135px;
+        flex: 0 1 calc(20% - 10px);
+        height: 140px;
+        max-height: 140px;
       }
 
       .card-value {
