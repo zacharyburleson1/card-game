@@ -111,7 +111,7 @@
     }
 
     .card-back {
-      background-image: url("card-back.jpg"); /* <- your image */
+      background-image: url("card-back.jpg");
       background-size: cover;
       background-position: center;
       box-shadow: 0 0 18px rgba(0, 200, 255, 0.6);
@@ -205,10 +205,11 @@
     let gameOver = false;
     let cardData = [];
 
+    /* UPDATED CARD VALUES */
     const baseValues = [
-      "1000", "1000", "1000", "1000",
-      "2500", "2500", "2500",
-      "X25", "X25",
+      "1", "1", "1", "1",
+      "5", "5", "5",
+      "X5", "X5",
       "BAD", "BAD"
     ];
 
@@ -239,6 +240,7 @@
 
         const valueEl = document.createElement("div");
         valueEl.className = "card-value";
+
         if (value === "BAD") {
           valueEl.textContent = "X";
           valueEl.classList.add("bad");
@@ -290,11 +292,13 @@
       goodSound.currentTime = 0;
       goodSound.play().catch(() => {});
 
-      if (value === "X25") {
-        score = score * 25 || 25; // if score was 0, treat as 25
+      /* FIXED MULTIPLIER LOGIC */
+      if (value === "X5") {
+        score = score * 5;
       } else {
         score += parseInt(value, 10);
       }
+
       scoreEl.textContent = score;
 
       if (remainingPicks === 0 && !gameOver) {
