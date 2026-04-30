@@ -301,8 +301,18 @@
 
       scoreEl.textContent = score;
 
+      /* END OF GAME CHECK */
       if (remainingPicks === 0 && !gameOver) {
-        statusEl.textContent = "No picks left! Final score: " + score;
+
+        /* ⭐ DOUBLE SCORE ONLY FOR PICK 9 MODE ⭐ */
+        if (currentModePicks === 9) {
+          score = score * 2;
+          scoreEl.textContent = score;
+          statusEl.textContent = "Pick 9 bonus! Score doubled! Final score: " + score;
+        } else {
+          statusEl.textContent = "No picks left! Final score: " + score;
+        }
+
         gameOver = true;
       } else if (!gameOver) {
         statusEl.textContent = `Nice! ${remainingPicks} pick(s) left.`;
