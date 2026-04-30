@@ -91,9 +91,9 @@
       overflow: hidden;
     }
 
-    /* AUTO-SCALING CARDS */
+    /* MOBILE AUTO-SCALING CARDS */
     .card {
-      flex: 0 1 calc(25% - 8px); /* 4 per row on mobile */
+      flex: 0 1 calc(25% - 8px); /* 4 per row */
       height: calc((100vh - 220px) / 3); /* Fit 3 rows */
       max-height: 160px;
       max-width: 110px;
@@ -160,11 +160,29 @@
       box-shadow: 0 0 16px rgba(0, 255, 255, 0.9);
     }
 
-    /* DESKTOP: 5 cards per row */
-    @media (min-width: 600px) {
+    /* DESKTOP FIX — NO SCROLLING, CARDS HIGHER UP */
+    @media (min-width: 900px) {
+      .game-wrapper {
+        padding-top: 0;
+      }
+
+      .score-bar {
+        margin-top: 4px;
+      }
+
+      .cards-container {
+        align-content: flex-start; /* Move cards upward */
+        padding-top: 10px;
+      }
+
       .card {
-        flex: 0 1 calc(20% - 10px);
-        height: 150px;
+        flex: 0 1 calc(20% - 10px); /* 5 per row */
+        height: 135px; /* Slightly smaller so everything fits */
+        max-height: 135px;
+      }
+
+      .card-value {
+        font-size: 1.4rem;
       }
     }
   </style>
@@ -321,7 +339,7 @@
     modeButtons.forEach(btn => {
       btn.addEventListener("click", () => {
         modeButtons.forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
+        btn.classList.add("active"));
         currentModePicks = parseInt(btn.dataset.picks, 10);
         newGameBtn.disabled = false;
         resetGame();
