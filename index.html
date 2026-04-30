@@ -28,7 +28,7 @@
       height: 100vh;
       display: flex;
       flex-direction: column;
-      padding: 0;
+      padding: 8px;
       box-sizing: border-box;
       overflow: hidden;
     }
@@ -36,7 +36,7 @@
     .score-bar,
     .controls {
       flex-shrink: 0;
-      padding: 6px 10px;
+      margin-bottom: 6px;
     }
 
     .score-display {
@@ -54,7 +54,6 @@
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
-      margin-bottom: 4px;
     }
 
     button {
@@ -87,16 +86,15 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      align-content: flex-start;
+      align-content: center;
       gap: 8px;
       overflow: hidden;
-      padding-top: 4px;
     }
 
-    /* MOBILE AUTO-SCALING CARDS */
+    /* AUTO-SCALING CARDS */
     .card {
-      flex: 0 1 calc(25% - 8px);
-      height: calc((100vh - 220px) / 3);
+      flex: 0 1 calc(25% - 8px); /* 4 per row on mobile */
+      height: calc((100vh - 220px) / 3); /* Fit 3 rows */
       max-height: 160px;
       max-width: 110px;
       perspective: 1000px;
@@ -162,30 +160,11 @@
       box-shadow: 0 0 16px rgba(0, 255, 255, 0.9);
     }
 
-    /* DESKTOP FIX — CARDS RIGHT UNDER BUTTONS, NO SCROLL */
-    @media (min-width: 900px) {
-      .game-wrapper {
-        padding: 0;
-      }
-
-      .score-bar,
-      .controls {
-        padding: 4px 10px;
-      }
-
-      .cards-container {
-        padding-top: 0;
-        align-content: flex-start;
-      }
-
+    /* DESKTOP: 5 cards per row */
+    @media (min-width: 600px) {
       .card {
         flex: 0 1 calc(20% - 10px);
-        height: 140px;
-        max-height: 140px;
-      }
-
-      .card-value {
-        font-size: 1.4rem;
+        height: 150px;
       }
     }
   </style>
@@ -342,7 +321,7 @@
     modeButtons.forEach(btn => {
       btn.addEventListener("click", () => {
         modeButtons.forEach(b => b.classList.remove("active"));
-        btn.classList.add("active"));
+        btn.classList.add("active");
         currentModePicks = parseInt(btn.dataset.picks, 10);
         newGameBtn.disabled = false;
         resetGame();
